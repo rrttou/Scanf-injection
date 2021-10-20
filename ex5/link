@@ -1,0 +1,2 @@
+sudo tcpdump -A -i lo -s0 port 8080
+nmap localhost -Pn -n -p 8080
